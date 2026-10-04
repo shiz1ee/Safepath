@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup, useMapEvents, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Circle, Popup, useMapEvents, useMap } from 'react-leaflet'
 import { useLiveQuery } from 'dexie-react-hooks'
 import 'leaflet/dist/leaflet.css'
 import './safepath.css'
@@ -38,6 +38,55 @@ function Recenter({ position }) {
   return null
 }
 
+function SmoothDot({ position }) {
+  const [shown, setShown] = useState(null)
+  const shownRef = useRef(null)
+  const map = useMap()
+
+  useEffect(() => {
+    if (!position) return
+    if (!shownRef.current) {
+      shownRef.current = { lat: position.lat, lng: position.lng }
+      setShown(shownRef.current)
+      return
+    }
+    const from = { ...shownRef.current }
+    const start = performance.now()
+    const dur = 900
+    let raf
+    const step = (now) => {
+      const t = Math.min((now - start) / dur, 1)
+      const cur = {
+        lat: from.lat + (position.lat - from.lat) * t,
+        lng: from.lng + (position.lng - from.lng) * t,
+      }
+      shownRef.current = cur
+      setShown(cur)
+      if (t < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [position])
+
+  useEffect(() => {
+    if (shown && !map.dragging._draggable?._moving) {
+      map.panTo([shown.lat, shown.lng], { animate: false })
+    }
+  }, [shown, map])
+
+  if (!shown) return null
+  return (
+    <>
+      {position?.acc && (
+        <Circle center={[shown.lat, shown.lng]} radius={position.acc}
+          pathOptions={{ color: '#3b82f6', weight: 1, fillOpacity: 0.1 }} />
+      )}
+      <CircleMarker center={[shown.lat, shown.lng]} radius={8}
+        pathOptions={{ color: '#ffffff', weight: 3, fillColor: '#3b82f6', fillOpacity: 1 }} />
+    </>
+  )
+}
+
 function ResizeWatcher() {
   const map = useMap()
   useEffect(() => {
@@ -51,7 +100,7 @@ function ResizeWatcher() {
 export default function App() {
   const online = useConnectivity()
   const [category, setCategory] = useState('dim-lighting')
-  const [alertsOn, setAlertsOn] = useState(false)
+  const [alertsOn, setAlertsOn] = useState(true)
   const [full, setFull] = useState(false)
   const [showGuide, setShowGuide] = useState(() => !localStorage.getItem('guideSeen'))
   const mapWrapRef = useRef(null)
@@ -194,13 +243,7 @@ export default function App() {
           <ClickHandler onPick={handlePick} />
           <Recenter position={position} />
           <ResizeWatcher />
-          {position && (
-            <CircleMarker
-              center={[position.lat, position.lng]}
-              radius={8}
-              pathOptions={{ color: '#3b82f6', fillOpacity: 1 }}
-            />
-          )}
+          <SmoothDot position={position} />
           {pins?.filter((p) => !p.deleted).map((p) => (
             <CircleMarker
               key={p.id}

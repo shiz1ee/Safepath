@@ -28,10 +28,14 @@ export function useProximity(pins, enabled) {
     const id = navigator.geolocation.watchPosition(
       (p) => {
         setError('')
-        setPosition({ lat: p.coords.latitude, lng: p.coords.longitude })
+        const next = { lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy }
+        setPosition((prev) => {
+          if (prev && distance(prev.lat, prev.lng, next.lat, next.lng) < 2) return prev
+          return next
+        })
       },
       (e) => setError(e.message),
-      { enableHighAccuracy: true, maximumAge: 5000 }
+      { enableHighAccuracy: true, maximumAge: 1000 }
     )
     return () => navigator.geolocation.clearWatch(id)
   }, [enabled])
