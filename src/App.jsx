@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup, useMapEvents } from 'react-leaflet'
+import { useEffect, useRef, useState } from 'react'
+import { MapContainer, TileLayer, CircleMarker, Popup, useMapEvents, useMap } from 'react-leaflet'
 import { useLiveQuery } from 'dexie-react-hooks'
 import 'leaflet/dist/leaflet.css'
 import { db, createPin, updatePin, deletePin, confirmPin, resolveConflict } from './db'
 import { useConnectivity } from './useConnectivity'
 import { syncNow } from './sync'
+import { useProximity } from './useProximity'
 
 const CATEGORIES = {
   'dim-lighting' : {label: 'Dim/ no lighting', color: '#f59e0b'},
@@ -23,12 +24,26 @@ function ClickHandler({ onPick }) {
   return null
 }
 
+function Recenter({ position }) {
+  const map = useMap()
+  const done = useRef(false)
+  useEffect(() => {
+    if (position && !done.current) {
+      map.setView([position.lat, position.lng], 16)
+      done.current = true
+    }
+  }, [position, map])
+  return null
+}
+
 export default function App() {
   const online = useConnectivity()
   const [category, setCategory] = useState('dim-lighting')
+  const [alertsOn, setAlertsOn] = useState(false)
   const pins = useLiveQuery(() => db.pins.toArray(), [])
   const pending = useLiveQuery(() => db.outbox.count(), [])
   const conflicts = pins?.filter((p) => p.syncStatus === 'conflict') || []
+  const { position, nearby, error: locError } = useProximity(pins, alertsOn)
 
   useEffect(() => {if (online) syncNow() }, [online])
 
@@ -59,6 +74,29 @@ export default function App() {
     <div>
       <h2>SafePath</h2>
       <p>{online ? 'Online' : 'Offline'} | {pending ?? 0} changes waiting</p>
+
+
+      <div style={{ margin: 8 }}>
+        {!alertsOn ? (
+          <button onClick={() => setAlertsOn(true)}> Turn on safety alerts</button>
+      ) : locError ? (
+        <span>{locError}</span>
+      ) : !position ? (
+        <span>Finding your location…</span>
+      ) : nearby.length === 0 ? (
+        <span>No reported hazards within 150 m</span>
+      ) : (
+        <div style={{ background: '#78350f', padding: 10, borderRadius: 8 }}>
+          <b>⚠ {nearby.length} reported hazard(s) within 150 m</b>
+          {nearby.slice(0, 3).map((p) => (
+            <div key={p.id}>{label(p)} · {p.dist} m away</div>
+          ))}
+        </div>
+      )}
+    </div>
+
+
+
       {conflicts.length > 0 && (
   <div style={{ background: '#7f1d1d', padding: 10, margin: 8, borderRadius: 8 }}>
     <b> {conflicts.length} conflict(s) need your decision</b>
@@ -95,6 +133,11 @@ export default function App() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <ClickHandler onPick={handlePick} />
+        <Recenter position={position} />
+        {position && (
+          <CircleMarker center={[position.lat, position.lng]} radius={8}
+            pathOptions={{ color: '#3b82f6', fillOpacity: 1 }} />
+        )}
         {pins?.filter((p) => !p.deleted).map((p) => (
           <CircleMarker
             key={p.id}
