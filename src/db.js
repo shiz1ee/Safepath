@@ -20,7 +20,7 @@ export async function createPin(data) {
         createdAt: now,
         updatedAt: now,
     }
-    await db.transation('rw', db.pins, db.outbox, async () => {
+    await db.transaction('rw', db.pins, db.outbox, async () => {
         await db.pins.add(pin)
         await db.outbox.add({
             opId: crypto.randomUUID(),
