@@ -5,6 +5,8 @@ An offline-first safety map. People can pin unsafe or safe spots (poor lighting,
 - Live demo: https://safepath-mha55m83r-shiz1ee.vercel.app
 - Problem statement: Web Development, Offline-First Application (PS ID: ALG-WEB-02)
 
+- Best used on a phone: live location, safety alerts and vibration depend on the device GPS.
+
 ## Problem
 
 Many web apps become unusable when connectivity is unstable. This project is an app that stays useful offline (cache, create, edit, delete), queues changes, and synchronizes safely later, with conflicting edits from two offline devices detected and handled without silent overwrite. Safety reporting fits well because the places people most want to check or report (underpasses, lanes, parks) often have weak signal.
