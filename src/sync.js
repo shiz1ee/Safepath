@@ -24,8 +24,10 @@ export async function syncNow() {
             for (const r of results) {
                 const entry = ops.find((o) => o.opId === r.opId)
                 if (!entry) continue
-                await db.transaction('rw', db._options, db.outbox, async () => {
+                await db.transaction('rw', db.pins, db.outbox, async () => {
                     if (r.status === 'ok') {
+                        await db.pins.put({ ...r.pin, syncStatus: 'synced' })
+                    } else if (r.status === 'conflict') {
                         await db.pins.update(entry.pinId, { syncStatus: 'conflict', serverCopy: r.pin })
                     }
                     await db.outbox.delete(entry.seq)

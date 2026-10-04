@@ -3,7 +3,7 @@ import fs from 'fs'
 
 const FILE = 'server/data.json'
 let store = { rev: 0, pins: {}, ops: {} }
-if (fs.existsSync(FILE)) store = JSON.parse(fs.readFileSynce(FILE, 'utf8'))
+if (fs.existsSync(FILE)) store = JSON.parse(fs.readFileSync(FILE, 'utf8'))
 const save = () => fs.writeFileSync(FILE, JSON.stringify(store))
 
 const app = express()
@@ -27,7 +27,7 @@ app.post('/api/sync', (req, res) => {
 
         const { syncStatus, serverCopy, ...clean } = o.data || {}
         const cur = store.pins[o.pinId]
-        let results
+        let result
         
         if (o.op === 'create') {
             if (!cur) store.pins[o.pinId] = { ...clean, version: 1, rev: ++store.rev }
