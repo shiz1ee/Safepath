@@ -28,7 +28,12 @@ export async function syncNow() {
                     if (r.status === 'ok') {
                         await db.pins.put({ ...r.pin, syncStatus: 'synced' })
                     } else if (r.status === 'conflict') {
-                        await db.pins.update(entry.pinId, { syncStatus: 'conflict', serverCopy: r.pin })
+                        await db.pins.update(entry.pinId, { 
+                            syncStatus: 'conflict',
+                            serverCopy: r.pin,
+                            localchanges: entry.data,
+                            conflictOp: entry.op,
+                        })
                     }
                     await db.outbox.delete(entry.seq)
                 })

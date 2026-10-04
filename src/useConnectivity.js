@@ -7,7 +7,7 @@ export function useConnectivity() {
         let cancelled = false
         async function check() {
             try {
-                const res = await fetch('/ping.txt?t=' + Date.now(), { cache: 'no-store' })
+                const res = await fetch('/api/ping?t=' + Date.now(), { cache: 'no-store' })
                 if (!cancelled) setOnline(res.ok)
             } catch {
               if (!cancelled) setOnline(false)

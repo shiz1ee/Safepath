@@ -9,7 +9,7 @@ const save = () => fs.writeFileSync(FILE, JSON.stringify(store))
 const app = express()
 app.use(express.json({ limit: '5mb'}))
 
-app.get('/api/ping', (req, res) => res.JSON({ ok: true }))
+app.get('/api/ping', (req, res) => res.json({ ok: true }))
 
 app.get('/api/pins', (req, res) => {
     const since = Number(req.query.since || 0)
@@ -42,7 +42,7 @@ app.post('/api/sync', (req, res) => {
         } else if (o.baseVersion !== cur.version) {
             result = { opId: o.opId, status: 'conflict', pin: cur}
         }else if (o.op === 'update') {
-            Object.assign(cur, clean, { id: cur.id, version: cur.version + 1, rev: ++store.rev })
+            Object.assign(cur, clean, { id: cur.id, deleted: false, version: cur.version + 1, rev: ++store.rev })
             result = {opId: o.opId, status: 'ok', pin: cur }
         } else {
             cur.deleted = true
