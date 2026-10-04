@@ -15,7 +15,21 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png}'],
+        navigateFallbackDenylist: [/^\/api/],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/[abc]\.title\.openstreetmap\.org\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'osm-tiles',
+              expiration: {maxEntries: 800, maxAgeSeconds: 60 * 60 * 24 * 30},
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],
+  server: {proxy: {'/api': 'http://localhost:3001'}},
+  preview: {proxy: {'/api': 'http://localhost:3001'}},
 })
