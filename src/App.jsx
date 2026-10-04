@@ -40,7 +40,7 @@ export default function App() {
     const hour = new Date().getHours()
     createPin({
       lat: latlng.lat,
-      lng: latling.lng,
+      lng: latlng.lng,
       category,
       severity: 2,
       note: '',
@@ -55,11 +55,11 @@ export default function App() {
 
       <label>Pin type: </label>
       <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        {Object.entries(CATEGORIES).map(([KeyboardEvent, c]) => (
+        {Object.entries(CATEGORIES).map(([key, c]) => (
           <option key={key} value={key}>{c.label}</option>
         ))}
       </select>
-      <p style={{ fontsize: 13 }}>Tap anywhere on the map to drop a pin.</p>
+      <p style={{ fontSize: 13 }}>Tap anywhere on the map to drop a pin.</p>
 
       <MapContainer center={[18.5204, 73.8567]} zoom={14} style={{ height: '65vh', width: '100%' }}>
         <TileLayer
