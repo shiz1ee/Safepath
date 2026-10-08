@@ -31,7 +31,7 @@ export async function syncNow() {
                         await db.pins.update(entry.pinId, { 
                             syncStatus: 'conflict',
                             serverCopy: r.pin,
-                            localchanges: entry.data,
+                            localChanges: entry.data,
                             conflictOp: entry.op,
                         })
                     }

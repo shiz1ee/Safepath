@@ -18,7 +18,7 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/[abc]\.title\.openstreetmap\.org\/.*/i,
+            urlPattern: /^https:\/\/[abc]\.tile\.openstreetmap\.org\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'osm-tiles',
