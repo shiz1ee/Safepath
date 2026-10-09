@@ -5,6 +5,13 @@ An offline-first safety map. People can pin unsafe or safe spots (poor lighting,
 - Live demo: https://safepath-mha55m83r-shiz1ee.vercel.app
 - Best used on a phone: live location, safety alerts and vibration depend on the device GPS.
 
+## ScreenShots
+
+| | | |
+|---|---|---|
+| <img src="screenshot/screenshot1.png"> |
+<img src="screenshot/screenshot2.png"> |
+<img src="screenshot/screenshot3.png"> |
 ## Features
 
 - Leaflet map with OpenStreetMap tiles
